@@ -1,0 +1,19 @@
+{
+  "name": "music-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js load",
+    "dev": "nodemon index.js",
+    "dev-load": "nodemon index.js load"
+  },
+  "dependencies": {
+    "discord-player": "^6.6.6",
+    "discord.js": "^14.13.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1",
+    "nodemon": "^3.0.1"
+  }
+}
