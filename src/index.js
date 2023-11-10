@@ -1,12 +1,22 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+import { Player } from 'discord-player';
 import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
+dotenv.config();
 const token = process.env.BOT_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const LOAD_SLASH = process.argv[2] == 'load';
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+export const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+  ]
+});
+client.player = new Player(client);
 
 // Commands registering and deploying
 client.commands = new Collection();
@@ -51,7 +61,7 @@ for (const file of eventFiles) {
   if (event.once) {
     client.once(event.name, (...args) => event.execute(...args));
   } else {
-    client.on(event.name, (...args) => event.execute(...args));
+    client.on(event.name, (interaction) => event.execute({ client, interaction }));
   }
 }
 

@@ -1,7 +1,7 @@
 import { Events } from 'discord.js';
 
 export const name = Events.InteractionCreate;
-export async function execute(interaction) {
+export async function execute({ client, interaction }) {
   if (!interaction.isChatInputCommand()) return;
 
   const command = interaction.client.commands.get(interaction.commandName);
@@ -12,7 +12,8 @@ export async function execute(interaction) {
   }
 
   try {
-    await command.execute(interaction);
+    await interaction.deferReply();
+    await command.execute({ client, interaction });
   } catch (error) {
     console.error(`Error executing ${interaction.commandName}`);
     console.error(error);
