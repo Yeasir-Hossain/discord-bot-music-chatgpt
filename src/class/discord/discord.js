@@ -11,7 +11,7 @@ const token = process.env.BOT_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const LOAD_SLASH = process.argv[2] == 'load';
 
-export default class Main {
+export default class Discord {
   constructor() {
     this.client = new Client({
       intents: [
