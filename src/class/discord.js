@@ -2,17 +2,11 @@ import { Player } from 'discord-player';
 import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import path, { join } from 'path';
-import settings from '../../settings';
-import Guild from '../guild/guild';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const token = process.env.BOT_TOKEN;
-const clientId = process.env.CLIENT_ID;
-const LOAD_SLASH = process.argv[2] == 'load';
+import settings from '../settings';
+import Guild from './guild';
 
 export default class Discord {
-  constructor() {
+  constructor(token, clientId, LOAD_SLASH) {
     this.client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
@@ -22,8 +16,11 @@ export default class Discord {
         GatewayIntentBits.GuildMembers,
       ]
     });
-    this.guild = new Guild(settings.GUILD_ID);
     this.settings = settings;
+    this.guild = new Guild(this.settings.GUILD_ID);
+    this.token = token;
+    this.clientId = clientId;
+    this.LOAD_SLASH = LOAD_SLASH;
   }
 
   init() {
@@ -44,17 +41,17 @@ export default class Discord {
         const command = require(filePath);
         if ('data' in command) {
           this.client.commands.set(command.data.name, command);
-          if (LOAD_SLASH) commands.push(command.data.toJSON());
+          if (this.LOAD_SLASH) commands.push(command.data.toJSON());
         } else {
           console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
         }
       }
     }
 
-    if (LOAD_SLASH) {
-      const rest = new REST().setToken(token);
+    if (this.LOAD_SLASH) {
+      const rest = new REST().setToken(this.token);
       rest.put(
-        Routes.applicationCommands(clientId),
+        Routes.applicationCommands(this.clientId),
         { body: commands },
       ).then((data) => console.log(`Successfully reloaded ${data.length} application (/) commands.`))
         .catch((e) => console.error(e));
@@ -75,6 +72,6 @@ export default class Discord {
       }
     }
     // Log in
-    this.client.login(token);
+    this.client.login(this.token);
   }
 }

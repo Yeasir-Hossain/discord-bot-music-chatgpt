@@ -1,4 +1,4 @@
-import req from '../../utils/req';
+import req from '../utils/req';
 
 export default class Guild {
   constructor(guildId) {
@@ -19,6 +19,5 @@ export default class Guild {
   async channels() {
     const channels = await req({ uri: `guilds/${this.guildId}/channels` });
     return channels.filter(channel => channel.type === 0);
-
   }
 }
