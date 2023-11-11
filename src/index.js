@@ -1,15 +1,26 @@
+// Import necessary modules
+import dotenv from 'dotenv';
+import express from 'express';
+import { createServer } from 'node:http';
+import cors from 'cors';
+import { Server } from 'socket.io';
+dotenv.config();
+
+// internal imports
 import { channels } from './entities/guild';
 import settings from './settings';
-import express from 'express';
-import cors from 'cors';
-import Discord from './class/discord/discord';
-const { createServer } = require('node:http');
-const { Server } = require('socket.io');
+import Discord from './class/discord';
 
+// Load environment variables
+const token = process.env.BOT_TOKEN;
+const clientId = process.env.CLIENT_ID;
+const LOAD_SLASH = process.argv[2] && process.argv[2].toLowerCase() == 'load';
+
+// Create Express app
 const app = express();
 const server = createServer(app);
 const io = new Server(server, { origin: settings.origin });
-const discord = new Discord();
+const discord = new Discord(token, clientId, LOAD_SLASH);
 
 // CORS middleware
 app.use(cors({
@@ -17,29 +28,28 @@ app.use(cors({
   credentials: true
 }));
 
-
+// Configuration object
 const configuration = {
   discord,
   settings,
   ws: io,
 };
 
-
+// API routes
 app.get('/api/channels', channels(configuration));
 
-
-// socket initialization
+// Socket initialization
 io.on('connection', async (socket) => {
   console.log('Connected =>', socket.id);
-  socket.on('disconnect', () => console.log('Diconnected =>', socket.id));
+  socket.on('disconnect', () => console.log('Disconnected =>', socket.id));
 });
 
+// Server listening
 server.listen(settings.PORT, async () => {
   console.log(`Listening => ${settings.PORT}`);
   try {
     discord.init();
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e);
   }
 });
