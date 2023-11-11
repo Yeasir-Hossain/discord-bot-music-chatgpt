@@ -1,7 +1,1 @@
-dependency tree
-file loop x
-env index e
-import age call hoice eijnno prthm e error dekhacchilo
-class er constructor e variable gula pass korte hbe
-guild id env theke
-load lowecase convert and check
+Create a dependency tree in the index js so that the commands get registered at first then the server start
