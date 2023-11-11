@@ -5,6 +5,13 @@ import path, { join } from 'path';
 import settings from '../settings';
 import Guild from './guild';
 
+/**
+ * Discord class for handling Discord-related functionalities.
+ *
+ * @param {string} token - The Discord bot token.
+ * @param {string} clientId - The Discord bot client ID.
+ * @param {boolean} LOAD_SLASH - Boolean indicating whether to load slash commands.
+ */
 export default class Discord {
   constructor(token, clientId, LOAD_SLASH) {
     this.client = new Client({
@@ -23,6 +30,9 @@ export default class Discord {
     this.LOAD_SLASH = LOAD_SLASH;
   }
 
+  /**
+   * Initialize the Discord client, including commands registration, deployment, event handling, and login.
+   */
   init() {
     this.client.player = new Player(this.client);
 
@@ -30,15 +40,21 @@ export default class Discord {
     this.client.commands = new Collection();
     const commands = [];
 
+    // Retrieve command folders and files
     const foldersPath = join(path.resolve(), 'src', 'commands');
     const commandFolders = readdirSync(foldersPath);
 
+    // Iterate through command folders and files
     for (const folder of commandFolders) {
       const commandsPath = join(foldersPath, folder);
       const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+      // Iterate through command files
       for (const file of commandFiles) {
         const filePath = join(commandsPath, file);
         const command = require(filePath);
+
+        // Check for required properties in the command
         if ('data' in command) {
           this.client.commands.set(command.data.name, command);
           if (this.LOAD_SLASH) commands.push(command.data.toJSON());
@@ -48,6 +64,7 @@ export default class Discord {
       }
     }
 
+    // Load slash commands if specified
     if (this.LOAD_SLASH) {
       const rest = new REST().setToken(this.token);
       rest.put(
@@ -57,20 +74,23 @@ export default class Discord {
         .catch((e) => console.error(e));
     }
 
-
-    // handle events
+    // Handle events
     const eventsPath = join(path.resolve(), 'src', 'events');
     const eventFiles = readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
+    // Iterate through event files
     for (const file of eventFiles) {
       const filePath = join(eventsPath, file);
       const event = require(filePath);
+
+      // Register events
       if (event.once) {
         this.client.once(event.name, (interaction) => event.execute({ client: this.client, interaction }));
       } else {
         this.client.on(event.name, (interaction) => event.execute({ client: this.client, interaction }));
       }
     }
+
     // Log in
     this.client.login(this.token);
   }
