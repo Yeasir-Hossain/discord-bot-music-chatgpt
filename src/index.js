@@ -1,4 +1,4 @@
-// Import necessary modules
+// Import external modules
 import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'node:http';
@@ -6,8 +6,8 @@ import cors from 'cors';
 import { Server } from 'socket.io';
 dotenv.config();
 
-// internal imports
-import { channels } from './entities/guild';
+// Internal imports
+import { channels, messages } from './entities/guild';
 import settings from './settings';
 import Discord from './class/discord';
 
@@ -19,8 +19,8 @@ const LOAD_SLASH = process.argv[2] && process.argv[2].toLowerCase() == 'load';
 // Create Express app
 const app = express();
 const server = createServer(app);
-const io = new Server(server, { origin: settings.origin });
-const discord = new Discord(token, clientId, LOAD_SLASH);
+const ws = new Server(server, { origin: settings.origin });
+const discord = new Discord(token, clientId, LOAD_SLASH, ws);
 
 // CORS middleware
 app.use(cors({
@@ -32,14 +32,15 @@ app.use(cors({
 const configuration = {
   discord,
   settings,
-  ws: io,
+  ws
 };
 
 // API routes
 app.get('/api/channels', channels(configuration));
+app.get('/api/messages/:channelId', messages(configuration));
 
 // Socket initialization
-io.on('connection', async (socket) => {
+ws.on('connection', async (socket) => {
   console.log('Connected =>', socket.id);
   socket.on('disconnect', () => console.log('Disconnected =>', socket.id));
 });

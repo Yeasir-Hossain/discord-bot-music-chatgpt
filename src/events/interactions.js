@@ -23,6 +23,7 @@ export const execute = async ({ client, interaction }) => {
 
   try {
     // Defer the reply before executing the command
+    console.log(interaction);
     await interaction.deferReply();
 
     // Execute the command

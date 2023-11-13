@@ -32,4 +32,17 @@ export default class Guild {
     const channels = await req({ uri: `guilds/${this.guildId}/channels` });
     return channels.filter(channel => channel.type === 0);
   }
+
+  /**
+ * Retrieve channel messaged bt the channel Id.
+ * @returns {Array} - An array of messages.
+ */
+  async messages(channelId, query) {
+    if (query.channel === 'notice') {
+      query.limit = 5;
+      delete query.channel;
+    }
+    const messages = await req({ uri: query.limit ? `/channels/${channelId}/messages?limit=${query.limit}` : `/channels/${channelId}/messages` });
+    return messages.filter(message => message.type === 0);
+  }
 }

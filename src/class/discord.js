@@ -1,5 +1,5 @@
 import { Player } from 'discord-player';
-import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
+import { Client, Collection, GatewayIntentBits, Partials, REST, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import path, { join } from 'path';
 import settings from '../settings';
@@ -13,7 +13,12 @@ import Guild from './guild';
  * @param {boolean} LOAD_SLASH - Boolean indicating whether to load slash commands.
  */
 export default class Discord {
-  constructor(token, clientId, LOAD_SLASH) {
+  constructor(token, clientId, LOAD_SLASH, ws) {
+    this.settings = settings;
+    this.token = token;
+    this.clientId = clientId;
+    this.LOAD_SLASH = LOAD_SLASH;
+    this.ws = ws;
     this.client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
@@ -21,21 +26,18 @@ export default class Discord {
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
-      ]
+      ],
+      partials: [Partials.Message]
     });
-    this.settings = settings;
     this.guild = new Guild(this.settings.GUILD_ID);
-    this.token = token;
-    this.clientId = clientId;
-    this.LOAD_SLASH = LOAD_SLASH;
   }
 
   /**
    * Initialize the Discord client, including commands registration, deployment, event handling, and login.
    */
-  init() {
+  async init() {
     this.client.player = new Player(this.client);
-
+    await this.client.player.extractors.loadDefault();
     // Commands registering and deploying
     this.client.commands = new Collection();
     const commands = [];
@@ -82,12 +84,11 @@ export default class Discord {
     for (const file of eventFiles) {
       const filePath = join(eventsPath, file);
       const event = require(filePath);
-
       // Register events
       if (event.once) {
         this.client.once(event.name, (interaction) => event.execute({ client: this.client, interaction }));
       } else {
-        this.client.on(event.name, (interaction) => event.execute({ client: this.client, interaction }));
+        this.client.on(event.name, (interaction) => event.execute({ client: this.client, interaction, ws: this.ws }));
       }
     }
 
