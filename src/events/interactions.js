@@ -23,12 +23,12 @@ export const execute = async ({ client, interaction }) => {
 
   try {
     // Defer the reply before executing the command
-    console.log(interaction);
     await interaction.deferReply();
 
     // Execute the command
     await command.execute({ client, interaction });
   } catch (error) {
+    await interaction.editReply('Error please try again');
     console.error(`Error executing ${interaction.commandName}`);
     console.error(error);
   }

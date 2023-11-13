@@ -5,8 +5,13 @@
  * @returns -  The channels.
  */
 export const channels = ({ discord }) => async (req, res) => {
-  const channels = await discord.guild.channels();
-  res.status(200).send(channels);
+  try {
+    const channels = await discord.guild.channels();
+    res.status(200).send(channels);
+  }
+  catch (e) {
+    console.log(e);
+  }
 };
 
 /**
@@ -16,6 +21,11 @@ export const channels = ({ discord }) => async (req, res) => {
  * @returns -  The channels.
  */
 export const messages = ({ discord }) => async (req, res) => {
-  const messages = await discord.guild.messages(req.params.channelId, req.query);
-  res.status(200).send(messages);
+  try {
+    const messages = await discord.guild.messages(req.params.channelId, req.query);
+    res.status(200).send(messages);
+  }
+  catch (e) {
+    console.log(e);
+  }
 };

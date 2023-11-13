@@ -29,8 +29,13 @@ export default class Guild {
    * @returns {Array} - An array of channels with type 0 (text channels).
    */
   async channels() {
-    const channels = await req({ uri: `guilds/${this.guildId}/channels` });
-    return channels.filter(channel => channel.type === 0);
+    try {
+      const channels = await req({ uri: `guilds/${this.guildId}/channels` });
+      return channels.filter(channel => channel.type === 0);
+    }
+    catch (e) {
+      console.log(e);
+    }
   }
 
   /**
@@ -38,11 +43,17 @@ export default class Guild {
  * @returns {Array} - An array of messages.
  */
   async messages(channelId, query) {
-    if (query.channel === 'notice') {
-      query.limit = 5;
-      delete query.channel;
+    try {
+      if (query.channel === 'notice') {
+        query.limit = 5;
+        delete query.channel;
+      }
+      const messages = await req({ uri: query.limit ? `/channels/${channelId}/messages?limit=${query.limit}` : `/channels/${channelId}/messages` });
+      return messages.filter(message => message.type === 0);
     }
-    const messages = await req({ uri: query.limit ? `/channels/${channelId}/messages?limit=${query.limit}` : `/channels/${channelId}/messages` });
-    return messages.filter(message => message.type === 0);
+    catch (e) {
+      console.log(e);
+    }
+
   }
 }
