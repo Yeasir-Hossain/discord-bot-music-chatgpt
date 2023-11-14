@@ -8,7 +8,8 @@ import { Events } from 'discord.js';
  * @returns {Promise<void>} - A Promise that resolves when the execution is complete.
  */
 export const name = Events.InteractionCreate;
-export const execute = async ({ client, interaction }) => {
+
+export const execute = async ({ client, interaction, ws, gpt }) => {
   // Check if the interaction is a chat input command
   if (!interaction.isChatInputCommand()) return;
 
@@ -25,8 +26,8 @@ export const execute = async ({ client, interaction }) => {
     // Defer the reply before executing the command
     await interaction.deferReply();
 
-    // Execute the command
-    await command.execute({ client, interaction });
+    // Execute the command according to the slash command
+    await command.execute({ client, interaction, ws, gpt });
   } catch (error) {
     await interaction.editReply('Error please try again');
     console.error(`Error executing ${interaction.commandName}`);

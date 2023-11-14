@@ -9,9 +9,7 @@ dotenv.config();
 // Internal imports
 import settings from './settings';
 import Discord from './class/discord';
-import ChatGPT from './class/chatGPT';
 import { channels, messages } from './entities/guild';
-import { chat } from './entities/chatGPT';
 
 // Load environment variables
 const token = process.env.BOT_TOKEN;
@@ -24,8 +22,8 @@ const app = express();
 app.use(express.json());
 const server = createServer(app);
 const ws = new Server(server, { origin: settings.origin });
-const discord = new Discord(token, clientId, LOAD_SLASH, ws);
-const chatGPT = new ChatGPT(chatgpt_api_key);
+
+const discord = new Discord(token, clientId, LOAD_SLASH, ws, chatgpt_api_key);
 
 // CORS middleware
 app.use(cors({
@@ -33,11 +31,9 @@ app.use(cors({
   credentials: true
 }));
 
-
 // Configuration object
 const configuration = {
   discord,
-  chatGPT,
   settings,
   ws
 };
@@ -45,7 +41,6 @@ const configuration = {
 // API routes
 app.get('/api/channels', channels(configuration));
 app.get('/api/messages/:channelId', messages(configuration));
-app.post('/api/ai', chat(configuration));
 
 // Socket initialization
 ws.on('connection', async (socket) => {

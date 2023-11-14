@@ -4,12 +4,12 @@ export const data = new SlashCommandBuilder().setName('queue')
   .setDescription('displays the current song queue')
   .addNumberOption((option) => option.setName('page').setDescription('Page number of the queue').setMinValue(1));
 export async function execute({ client, interaction }) {
-  const queue = client.player.getQueue(interaction.guildId);
-  if (!queue || !queue.playing) {
+  const queue = client.player.nodes.get(interaction.guildId);
+  if (!queue || !queue.node.isPlaying()) {
     return await interaction.editReply('There are no songs in the queue');
   }
 
-  const totalPages = Math.ceil(queue.tracks.length / 10) || 1;
+  const totalPages = Math.ceil(queue.tracks.size / 10) || 1;
   const page = (interaction.options.getNumber('page') || 1) - 1;
 
   if (page + 1 > totalPages)
@@ -19,7 +19,7 @@ export async function execute({ client, interaction }) {
     return `**${page * 10 + i + 1}.** \`[${song.duration}]\` ${song.title} -- <@${song.requestedBy.id}>`;
   }).join('\n');
 
-  const currentSong = queue.current;
+  const currentSong = queue.currentTrack;
 
   await interaction.editReply({
     embeds: [

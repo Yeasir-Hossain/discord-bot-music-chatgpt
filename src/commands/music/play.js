@@ -28,7 +28,18 @@ export const data = new SlashCommandBuilder()
 export async function execute({ client, interaction }) {
   if (!interaction.member.voice.channel) return interaction.editReply('You need to be in a VC to use this command');
 
-  const queue = await client.player.createQueue(interaction.guild);
+  const queue = await client.player.nodes.create(interaction.guild, {
+    metadata: {
+      channel: interaction.channel,
+      client: interaction.guild.members.me,
+      requestedBy: interaction.user,
+    },
+    volume: 80,
+    leaveOnEmpty: true,
+    leaveOnEmptyCooldown: 300000,
+    leaveOnEnd: true,
+    leaveOnEndCooldown: 300000,
+  });
   if (!queue.connection) await queue.connect(interaction.member.voice.channel);
 
   let embed = new EmbedBuilder();
@@ -81,7 +92,7 @@ export async function execute({ client, interaction }) {
       .setThumbnail(song.thumbnail)
       .setFooter({ text: `Duration: ${song.duration}` });
   }
-  if (!queue.playing) await queue.play();
+  if (!queue.node.isPlaying()) await queue.node.play();
   await interaction.editReply({
     embeds: [embed]
   });

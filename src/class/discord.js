@@ -4,21 +4,68 @@ import { readdirSync } from 'fs';
 import path, { join } from 'path';
 import settings from '../settings';
 import Guild from './guild';
+import ChatGPT from './chatGPT';
 
 /**
  * Discord class for handling Discord-related functionalities.
  *
+ * @class Discord
  * @param {string} token - The Discord bot token.
  * @param {string} clientId - The Discord bot client ID.
  * @param {boolean} LOAD_SLASH - Boolean indicating whether to load slash commands.
+ * @param {WebSocket} ws - The WebSocket connection.
+ * @param {string} chatgpt_api_key - The API key for the ChatGPT service.
  */
 export default class Discord {
-  constructor(token, clientId, LOAD_SLASH, ws) {
+  /**
+   * @constructor
+   * @param {string} token - The Discord bot token.
+   * @param {string} clientId - The Discord bot client ID.
+   * @param {boolean} LOAD_SLASH - Boolean indicating whether to load slash commands.
+   * @param {WebSocket} ws - The WebSocket connection.
+   * @param {string} chatgpt_api_key - The API key for the ChatGPT service.
+   */
+  constructor(token, clientId, LOAD_SLASH, ws, chatgpt_api_key) {
+    /**
+     * The settings object containing various configurations.
+     * @member {Object}
+     */
     this.settings = settings;
+
+    /**
+     * The Discord bot token.
+     * @member {string}
+     */
     this.token = token;
+
+    /**
+     * The Discord bot client ID.
+     * @member {string}
+     */
     this.clientId = clientId;
+
+    /**
+     * Boolean indicating whether to load slash commands.
+     * @member {boolean}
+     */
     this.LOAD_SLASH = LOAD_SLASH;
+
+    /**
+     * The WebSocket connection.
+     * @member {WebSocket}
+     */
     this.ws = ws;
+
+    /**
+     * Instance of the ChatGPT class for GPT-based interactions.
+     * @member {ChatGPT}
+     */
+    this.gpt = new ChatGPT(chatgpt_api_key);
+
+    /**
+     * The Discord.js Client instance.
+     * @member {Client}
+     */
     this.client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
@@ -29,17 +76,45 @@ export default class Discord {
       ],
       partials: [Partials.Message]
     });
+
+    /**
+     * Instance of the Guild class for handling guild-specific operations.
+     * @member {Guild}
+     */
     this.guild = new Guild(this.settings.GUILD_ID);
   }
 
   /**
    * Initialize the Discord client, including commands registration, deployment, event handling, and login.
+   *
+   * @async
+   * @method init
    */
   async init() {
-    this.client.player = new Player(this.client);
+    /**
+     * Discord.js Player instance for handling audio playback.
+     * @member {Player}
+     */
+    this.client.player = new Player(this.client, {
+      ytdlOptions: {
+        quality: 'highestaudio',
+        highWaterMark: 1 << 25
+      }
+    });
+
+    // Load default audio extractors
     await this.client.player.extractors.loadDefault();
-    // Commands registering and deploying
+
+    /**
+     * Collection of registered commands.
+     * @member {Collection}
+     */
     this.client.commands = new Collection();
+
+    /**
+     * Array containing command data for slash command registration.
+     * @member {Array<Object>}
+     */
     const commands = [];
 
     // Retrieve command folders and files
@@ -84,12 +159,14 @@ export default class Discord {
     for (const file of eventFiles) {
       const filePath = join(eventsPath, file);
       const event = require(filePath);
-      // Register events
-      if (event.once) {
-        this.client.once(event.name, (interaction) => event.execute({ client: this.client, interaction }));
-      } else {
-        this.client.on(event.name, (interaction) => event.execute({ client: this.client, interaction, ws: this.ws }));
-      }
+
+      /**
+       * Iterate through the event files and register the events
+       * The execute funtion is the execution of the event
+       * After the event is executed then the execution of the commands are executed inside the event
+       */
+      const executeFunction = (interaction) => event.execute({ client: this.client, interaction, ws: this.ws, gpt: this.gpt });
+      this.client[event.once ? 'once' : 'on'](event.name, executeFunction);
     }
 
     // Log in
