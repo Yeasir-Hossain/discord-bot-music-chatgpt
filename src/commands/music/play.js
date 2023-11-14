@@ -50,6 +50,7 @@ export async function execute({ client, interaction }) {
       requestedBy: interaction.user,
       searchEngine: QueryType.YOUTUBE_VIDEO
     });
+    console.log(result);
     if (result.tracks.length === 0)
       return interaction.editReply('No results');
 
