@@ -19,7 +19,7 @@ export const name = Events.MessageCreate;
  */
 export const execute = async ({ interaction, ws }) => {
   try {
-    if (interaction.system || interaction.author.bot) return;
+    if (interaction.system || !interaction.content) return;
     const message = transformInteractionToMessage(interaction);
     ws.to(message.channel_id).emit('message', message);
   } catch (error) {

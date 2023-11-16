@@ -49,7 +49,7 @@ export default class Guild {
         delete query.channel;
       }
       const messages = await req({ uri: query.limit ? `/channels/${channelId}/messages?limit=${query.limit}` : `/channels/${channelId}/messages` });
-      return messages.filter(message => message.type === 0);
+      return messages.filter(message => message.content);
     }
     catch (e) {
       console.log(e);
