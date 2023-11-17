@@ -19,7 +19,7 @@ export const name = Events.MessageDelete;
  */
 export const execute = async ({ interaction, ws }) => {
   try {
-    ws.to(interaction.channelId).emit('messageDelete', interaction);
+    ws.emit('messageDelete', { channelId: interaction.channelId, id: interaction.id });
   } catch (error) {
     console.error(error);
   }

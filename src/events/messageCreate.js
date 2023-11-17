@@ -19,9 +19,9 @@ export const name = Events.MessageCreate;
  */
 export const execute = async ({ interaction, ws }) => {
   try {
-    if (interaction.system || !interaction.content) return;
+    if (interaction.system || (!interaction.content && !interaction.attachments)) return;
     const message = transformInteractionToMessage(interaction);
-    ws.to(message.channel_id).emit('message', message);
+    ws.emit('message', message);
   } catch (error) {
     console.error(error);
   }

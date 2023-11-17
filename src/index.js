@@ -20,16 +20,19 @@ const LOAD_SLASH = process.argv[2] && process.argv[2].toLowerCase() == 'load';
 // Create Express app
 const app = express();
 app.use(express.json());
-const server = createServer(app);
-const ws = new Server(server, { origin: settings.origin });
-
-const discord = new Discord(token, clientId, LOAD_SLASH, ws, chatgpt_api_key);
-
-// CORS middleware
 app.use(cors({
   origin: settings.origin,
   credentials: true
 }));
+
+const server = createServer(app);
+const ws = new Server(server, {
+  cors: {
+    origin: settings.origin,
+    methods: ['GET', 'POST']
+  }
+});
+const discord = new Discord(token, clientId, LOAD_SLASH, ws, chatgpt_api_key);
 
 // Configuration object
 const configuration = {

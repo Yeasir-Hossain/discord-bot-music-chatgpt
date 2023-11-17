@@ -28,7 +28,7 @@ export default function transformInteractionToMessage(interaction) {
     system: author.system,
     flags: { bitfield: author.public_flags },
     username: author.username,
-    globalName: author.globalName,
+    global_name: author.globalName,
     discriminator: author.discriminator,
     avatar: author.avatar,
     banner: author.banner,

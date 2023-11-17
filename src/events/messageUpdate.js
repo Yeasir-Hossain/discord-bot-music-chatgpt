@@ -22,7 +22,7 @@ export const execute = async ({ interaction, ws }) => {
   try {
     if (interaction.system || !interaction.reactions.message.content) return;
     const message = transformInteractionToMessage(interaction.reactions.message);
-    ws.to(message.channel_id).emit('messageUpdate', message);
+    ws.emit('messageUpdate', message);
   } catch (error) {
     console.error(error);
   }
