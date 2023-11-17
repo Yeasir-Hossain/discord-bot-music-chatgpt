@@ -36,7 +36,8 @@ This Discord bot is designed to provide a seamless integration of ChatGPT for na
 4. **Start the Bot:**
 
     ```bash
-    yarn start
+    yarn dev-load // to load register the commands and start the bot with nodemon
+    yarn dev // to start the bot with nodemon
     ```
 
 ## Usage
