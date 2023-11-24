@@ -34,16 +34,9 @@ const ws = new Server(server, {
 });
 const discord = new Discord(token, clientId, LOAD_SLASH, ws, chatgpt_api_key);
 
-// Configuration object
-const configuration = {
-  discord,
-  settings,
-  ws
-};
-
 // API routes
-app.get('/api/channels', channels(configuration));
-app.get('/api/messages/:channelId', messages(configuration));
+app.get('/api/channels', channels({ discord }));
+app.get('/api/messages/:channelId', messages({ discord }));
 
 // Socket initialization
 ws.on('connection', async (socket) => {

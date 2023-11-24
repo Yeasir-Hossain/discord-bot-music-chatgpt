@@ -72,7 +72,7 @@ export async function execute({ client, interaction }) {
       return interaction.editReply('No results');
 
     const playlist = result.playlist;
-    await queue.addTracks(result.tracks);
+    await queue.addTrack(playlist);
     embed
       .setDescription(`**${result.tracks.length} songs from [${playlist.title}](${playlist.url})** have been added to the Queue`)
       .setThumbnail(playlist.thumbnail);
